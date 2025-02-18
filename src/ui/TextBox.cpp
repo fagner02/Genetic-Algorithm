@@ -1,5 +1,5 @@
-#include <TextBox.h>
-#include <Input.h>
+#include <ui/TextBox.h>
+#include <ui/Input.h>
 
 TextBox::TextBox(createLabelArgs args, bool isMultiline, std::wstring tooltip) : isMultiline(isMultiline) {
     label = new Label(args);

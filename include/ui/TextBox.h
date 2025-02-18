@@ -1,6 +1,6 @@
 #include <GL/gl.h>
-#include <DrawObject.h>
-#include <Label.h>
+#include <ui/DrawObject.h>
+#include <ui/Label.h>
 #include <iostream>
 #include <cmath>
 

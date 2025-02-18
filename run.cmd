@@ -7,13 +7,13 @@ src\costs.cpp ^
 src\genetic_algo.cpp ^
 src\heuristics.cpp ^
 src\experiments.cpp ^
-src\rectshape.cpp ^
 src\point.cpp ^
 src\goal_test.cpp ^
 src\node.cpp ^
-src\hsl.cpp ^
-src\Input.cpp ^
-src\TextBox.cpp ^
+src\ui\RoundRectangle.cpp ^
+src\ui\hsl.cpp ^
+src\ui\Input.cpp ^
+src\ui\TextBox.cpp ^
 -lsfml-graphics-s ^
 -lsfml-window-s ^
 -lsfml-system-s ^

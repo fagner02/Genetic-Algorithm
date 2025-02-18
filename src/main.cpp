@@ -2,7 +2,7 @@
 #include <constants.h>
 #include <costs.h>
 #include <print.h>
-#include <rectshape.h>
+#include <ui/RoundRectangle.h>
 #include <structures.h>
 #include <heuristics.h>
 #include <genetic_algo.h>
@@ -24,10 +24,10 @@
 #include <GL/gl.h>
 #include <set>
 #include <memory>
-#include <Label.h>
-#include <DrawObject.h>
-#include <TextBox.h>
-#include <Input.h>
+#include <ui/Label.h>
+#include <ui/DrawObject.h>
+#include <ui/TextBox.h>
+#include <ui/Input.h>
 #include <codecvt>
 
 void draw(

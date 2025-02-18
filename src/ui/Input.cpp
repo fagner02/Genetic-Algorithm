@@ -1,5 +1,5 @@
-#include <Input.h>
-#include <TextBox.h>
+#include <ui/Input.h>
+#include <ui/TextBox.h>
 
 TextBox* Input::add(TextBox* input) {
     inputs.push_back(input);

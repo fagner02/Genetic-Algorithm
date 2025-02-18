@@ -1,5 +1,5 @@
 
-#include "hsl.h"
+#include "ui/hsl.h"
 
 
 HSL::HSL() :Hue(0), Saturation(0), Luminance(0) {}

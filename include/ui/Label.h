@@ -1,6 +1,6 @@
-#include <DrawObject.h>
+#include <ui/DrawObject.h>
 #include <SFML/Graphics.hpp>
-#include <rectshape.h>
+#include <ui/RoundRectangle.h>
 
 #pragma once
 
