@@ -10,6 +10,9 @@ src\ui\RoundRectangle.cpp ^
 src\ui\hsl.cpp ^
 src\ui\Input.cpp ^
 src\ui\TextBox.cpp ^
+src\ui\Row.cpp ^
+src\ui\CenterBox.cpp ^
+src\ui\InstructionText.cpp ^
 -lsfml-graphics-s ^
 -lsfml-window-s ^
 -lsfml-system-s ^

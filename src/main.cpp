@@ -24,6 +24,9 @@
 #include <ui/DrawObject.h>
 #include <ui/TextBox.h>
 #include <ui/Input.h>
+#include <ui/Row.h>
+#include <ui/InstructionText.h>
+#include <ui/CenterBox.h>
 #include <codecvt>
 
 void draw(
@@ -83,125 +86,6 @@ std::string processFileName(std::string file_name, std::string default_name, std
     return file_name;
 }
 
-class Row : public DrawObject {
-public:
-    std::vector<DrawObject*> childrenContainer;
-    float gap = 5;
-
-    Row(std::vector<DrawObject*> children) {
-        childrenContainer = children;
-        updateLayout();
-    }
-
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
-        if (!visible) return;
-        for (auto& child : childrenContainer) {
-            child->draw(target, states);
-        }
-    }
-
-    sf::Vector2f calculateSize() const override {
-        float width = 0;
-        float height = 0;
-        for (auto& child : childrenContainer) {
-            auto size = child->calculateSize();
-            width += size.x;
-            if (size.y > height) {
-                height = size.y;
-            }
-        }
-        width += gap * (childrenContainer.size() - 1);
-        return sf::Vector2f(width, height);
-    }
-
-    void setPosition(sf::Vector2f position) override {
-        this->position = position;
-        updateLayout();
-    }
-
-    void updateLayout() {
-        float height = 0;
-        float x = 0;
-        for (auto& child : childrenContainer) {
-            child->setPosition(sf::Vector2f(position.x + x, position.y));
-            auto childSize = child->calculateSize();
-            x += childSize.x + gap;
-            if (childSize.y > height) {
-                height = childSize.y;
-            }
-        }
-        for (auto& child : childrenContainer) {
-            auto childSize = child->calculateSize();
-            child->setSize(sf::Vector2f(childSize.x, height));
-        }
-        size = calculateSize();
-    }
-
-    void addChild(DrawObject* child) {
-        childrenContainer.push_back(child);
-        updateLayout();
-    }
-};
-
-class CenterBox : public DrawObject {
-public:
-    DrawObject* child;
-    CenterBox(DrawObject* child) : child(child) {
-        updateLayout();
-    }
-    CenterBox() {
-        child = nullptr;
-    }
-    void updateLayout() {
-        auto childSize = child->calculateSize();
-        auto childPos = sf::Vector2f(
-            position.x + (size.x - childSize.x) / 2.0,
-            position.y + (size.y - childSize.y) / 2.0
-        );
-        child->setPosition(childPos);
-    }
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
-        if (visible) child->draw(target, states);
-    }
-    void setSize(sf::Vector2f size) {
-        this->size = size;
-        updateLayout();
-    }
-    sf::Vector2f calculateSize() const override {
-        return child->calculateSize();
-    }
-    void setPosition(sf::Vector2f position) override {
-        this->position = position;
-        updateLayout();
-    }
-};
-class InstructionText : public DrawObject {
-public:
-    sf::Text text;
-    InstructionText(std::wstring text, sf::Font& font) {
-        this->text.setFont(font);
-        this->text.setString(text);
-        this->text.setCharacterSize(20);
-        this->text.setOrigin(this->text.getLocalBounds().getPosition());
-        this->text.setFillColor(sf::Color(0, 0, 0));
-        this->text.setOutlineColor(sf::Color(255, 255, 255));
-        this->text.setOutlineThickness(3);
-    }
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
-        if (visible) target.draw(text, states);
-    }
-    sf::Vector2f calculateSize() const override {
-        return text.getGlobalBounds().getSize();
-    }
-    void setPosition(sf::Vector2f position) override {
-        text.setPosition(position);
-    }
-    void setText(std::wstring text) {
-        this->text.setString(text);
-        parent->childUpdated = true;
-        parent->update();
-    }
-};
 class ClickableLabel : public DrawObject {
 public:
     Label* label;
