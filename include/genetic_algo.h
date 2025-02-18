@@ -1,7 +1,7 @@
 #include <iostream>
-#include <constants.h>
 #include <algorithm>
 #include <random>
+#include <point.h>
 
 #pragma once
 

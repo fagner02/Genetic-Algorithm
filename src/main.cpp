@@ -1,10 +1,6 @@
-
-#include <constants.h>
-#include <costs.h>
 #include <print.h>
 #include <ui/RoundRectangle.h>
 #include <structures.h>
-#include <heuristics.h>
 #include <genetic_algo.h>
 #include <SFML/Graphics.hpp>
 #include <algorithm>
@@ -376,8 +372,7 @@ int main() {
         for (int j = 0; j < blockNum; j++) {
             blocks[i].push_back(block{
                 sf::RoundedRectangleShape(sf::Vector2f(50, 50), 10, 20),
-                sf::Text(),
-                visited_info{-1, -1, -1}
+                sf::Text()
                 });
             blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
             blocks[i][j].text.setFont(font);

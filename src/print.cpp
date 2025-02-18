@@ -1,29 +1,5 @@
 #include <print.h>
 
-std::vector<node> calculatePath(node target) {
-    std::vector<node> path = {  };
-
-    while (true) {
-        path.emplace_back(target);
-        if (target.parent == nullptr) {
-            break;
-        }
-        target = *target.parent;
-    }
-    return path;
-}
-
-// usado para animar o caminho
-void animatePath(node target, std::vector<std::vector<block>> blocks, bool& shouldDraw) {
-    std::vector<node> path = calculatePath(target);
-
-    for (auto& node : path) {
-        blocks[node.pos.x][node.pos.y].info.cost = node.data.cost;
-        blocks[node.pos.x][node.pos.y].info.is_path = true;
-        setBlockColors(blocks, shouldDraw);
-    }
-}
-
 // usado para animar o caminho
 void  setBlockColors(
     std::vector<std::vector<block>> blocks,
@@ -32,21 +8,21 @@ void  setBlockColors(
 ) {
     for (int i = 0; i < blocks.size(); i++) {
         for (int j = 0; j < blocks.size(); j++) {
-            if (i == next.x && j == next.y) {
-                blocks[i][j].shape.setFillColor(sf::Color(255, 0, 0));
-            } else if (blocks[i][j].info.label == "G") {
-                blocks[i][j].shape.setFillColor(sf::Color(0, 100, 0));
-            } else if (blocks[i][j].info.label == "S") {
-                blocks[i][j].shape.setFillColor(sf::Color(10, 10, 105));
-            } else if (blocks[i][j].info.label == "T") {
-                blocks[i][j].shape.setFillColor(sf::Color(230, 150, 15));
-            } else if (blocks[i][j].info.is_path) {
-                blocks[i][j].shape.setFillColor(sf::Color(100, 100, 200));
-            } else if (blocks[i][j].info.cost != -1) {
-                blocks[i][j].shape.setFillColor(sf::Color(100, 200, 100));
-            } else {
-                blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
-            }
+            // if (i == next.x && j == next.y) {
+            //     blocks[i][j].shape.setFillColor(sf::Color(255, 0, 0));
+            // } else if (blocks[i][j].info.label == "G") {
+            //     blocks[i][j].shape.setFillColor(sf::Color(0, 100, 0));
+            // } else if (blocks[i][j].info.label == "S") {
+            //     blocks[i][j].shape.setFillColor(sf::Color(10, 10, 105));
+            // } else if (blocks[i][j].info.label == "T") {
+            //     blocks[i][j].shape.setFillColor(sf::Color(230, 150, 15));
+            // } else if (blocks[i][j].info.is_path) {
+            //     blocks[i][j].shape.setFillColor(sf::Color(100, 100, 200));
+            // } else if (blocks[i][j].info.cost != -1) {
+            //     blocks[i][j].shape.setFillColor(sf::Color(100, 200, 100));
+            // } else {
+            //     blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
+            // }
         }
     }
     shouldDraw = true;
@@ -77,21 +53,11 @@ std::string generate_log(
     int cost_id,
     int heuristic_id,
     float cost,
-    std::vector<node> path,
     std::vector<int> order,
     std::set<point> constraints
 ) {
     std::stringstream ss;
-    ss << algorithm << "," << visited_qty << "," << generated_qty << "," << path.size() << ",";
-    if (path.size() == 0) {
-        ss << "null,";
-    } else {
-        ss << "[";
-        for (auto p : path) {
-            ss << "[" << p.pos.x << " " << p.pos.y << "]";
-        }
-        ss << "],";
-    }
+    ss << algorithm << "," << visited_qty << "," << generated_qty << ",";
 
     ss << "[" << start.x << " " << start.y << "], [" << target.x << " " << target.y << "],";
     ss << cost_id << "," << heuristic_id << ",";
@@ -113,12 +79,4 @@ std::string generate_log(
     }
     ss << "]";
     return ss.str();
-}
-
-// para animar a busca gulosa
-void animate_greedy_search_cost(std::vector<node*> path, std::vector<std::vector<block>> blocks, bool& shouldDraw) {
-    for (auto it = path.begin(); it != path.end(); it++) {
-        set_block_data(blocks, *(*it));
-        setBlockColors(blocks, shouldDraw, (*it)->pos);
-    }
 }

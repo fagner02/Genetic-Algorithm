@@ -1,7 +1,6 @@
 #include <SFML/Graphics/Color.hpp>
 #include <algorithm>
 #include <cmath>
-#include <constants.h>
 
 #pragma once
 

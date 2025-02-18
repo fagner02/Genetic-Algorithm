@@ -3,13 +3,9 @@ g++ -std=c++17 -static -static-libgcc -static-libstdc++ -pthread -Wl,-Bstatic -D
 src\main.cpp ^
 src\structures.cpp ^
 src\print.cpp ^
-src\costs.cpp ^
 src\genetic_algo.cpp ^
-src\heuristics.cpp ^
 src\experiments.cpp ^
 src\point.cpp ^
-src\goal_test.cpp ^
-src\node.cpp ^
 src\ui\RoundRectangle.cpp ^
 src\ui\hsl.cpp ^
 src\ui\Input.cpp ^
