@@ -645,7 +645,8 @@ int main() {
                 window.draw(*button);
             }
             window.display();
-            shouldDraw = false;
+            ga.nextGeneration();
+            // shouldDraw = false;
         }
     }
     return 0;
