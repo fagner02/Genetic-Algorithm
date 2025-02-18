@@ -13,6 +13,9 @@ src\ui\TextBox.cpp ^
 src\ui\Row.cpp ^
 src\ui\CenterBox.cpp ^
 src\ui\InstructionText.cpp ^
+src\ui\Column.cpp ^
+src\ui\Clickable.cpp ^
+src\ui\ClickableLabel.cpp ^
 -lsfml-graphics-s ^
 -lsfml-window-s ^
 -lsfml-system-s ^

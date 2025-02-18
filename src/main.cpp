@@ -27,6 +27,9 @@
 #include <ui/Row.h>
 #include <ui/InstructionText.h>
 #include <ui/CenterBox.h>
+#include <ui/ClickableLabel.h>
+#include <ui/Clickable.h>
+#include <ui/Column.h>
 #include <codecvt>
 
 void draw(
@@ -85,142 +88,6 @@ std::string processFileName(std::string file_name, std::string default_name, std
     }
     return file_name;
 }
-
-class ClickableLabel : public DrawObject {
-public:
-    Label* label;
-    sf::Color hoverColor = sf::Color(150, 150, 150);
-    sf::Color pressedColor = sf::Color(200, 200, 200);
-    sf::Color defaultColor = sf::Color(100, 100, 100);
-    bool pressed = false;
-
-    ClickableLabel(Label* label, std::function<void()> onClick) : label(label), _onClick(onClick) {
-
-    }
-    ClickableLabel(createLabelArgs args, std::function<void()> onClick) : _onClick(onClick) {
-        this->label = new Label(args);
-    }
-
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
-        if (!visible) return;
-        label->draw(target, states);
-    }
-
-    sf::Vector2f calculateSize() const override {
-        return label->calculateSize();
-    }
-
-    void setPosition(sf::Vector2f position) override {
-        label->setPosition(position);
-    }
-    void setSize(sf::Vector2f size) override {
-        label->setSize(size);
-    }
-    sf::FloatRect getBounds() override {
-        return label->getBounds();
-    }
-
-    void onClick() {
-        label->box.setFillColor(defaultColor);
-        pressed = false;
-        _onClick();
-    }
-
-    void hover() {
-        label->box.setFillColor(hoverColor);
-    }
-    void unhover() {
-        label->box.setFillColor(defaultColor);
-    }
-    void press() {
-        pressed = true;
-        label->box.setFillColor(pressedColor);
-    }
-    void release() {
-        pressed = false;
-        label->box.setFillColor(defaultColor);
-    }
-
-private:
-    std::function<void()> _onClick;
-};
-
-class Clickable {
-public:
-    std::vector<ClickableLabel*> objs = {};
-    ClickableLabel* add(ClickableLabel* obj) {
-        objs.push_back(obj);
-        return obj;
-    }
-};
-
-class Column : public DrawObject {
-public:
-    float gap;
-    std::vector<DrawObject*> childrenContainer;
-
-    Column(std::vector<DrawObject*> children, float gap) : gap(gap) {
-        childrenContainer = children;
-        for (auto& child : children) {
-            child->parent = this;
-        }
-        updateLayout();
-    }
-    void updateLayout() {
-        float y = 0;
-        sf::Vector2f pos(position);
-        pos.y += margin;
-        pos.x += margin;
-        for (auto& child : childrenContainer) {
-            child->parentUpdated = true;
-            child->setPosition(sf::Vector2f(pos.x, pos.y + y));
-            y += child->calculateSize().y + gap;
-        }
-        size = calculateSize();
-    }
-
-    void update() override {
-        if (childUpdated) {
-            childUpdated = false;
-            updateLayout();
-        }
-    }
-
-    void addChild(DrawObject* child) {
-        childrenContainer.push_back(child);
-        updateLayout();
-    }
-    void addChildren(std::vector<DrawObject*> children) {
-        for (auto& child : children) {
-            childrenContainer.push_back(child);
-        }
-        updateLayout();
-    }
-
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
-        if (!visible) return;
-        for (auto& child : childrenContainer) {
-            child->draw(target, states);
-        }
-    }
-
-    sf::Vector2f calculateSize() const override {
-        float width = 0;
-        float height = 0;
-        for (auto& child : childrenContainer) {
-            auto size = child->calculateSize();
-            if (size.x > width) {
-                width = size.x;
-            }
-            height += size.y + gap;
-        }
-        return sf::Vector2f(width, height);
-    }
-    void setPosition(sf::Vector2f position) override {
-        this->position = position;
-        updateLayout();
-    }
-};
 
 int main() {
     std::cout << "Hello, World!\n";
