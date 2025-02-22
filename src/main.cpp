@@ -107,7 +107,8 @@ int main() {
 
     sf::Vector2u size = window.getSize();
 
-    GeneticAlgorithm ga;
+    GeneticAlgorithm ga(SelectionMethod::TOURNAMENT, CrossoverMethod::HALVED, MutationMethod::SWAP, ElitismMethod::RATIO);
+
     const int blockNum = ceil(sqrt(ga.instanceLimit));
 
     float blockSize = 50;

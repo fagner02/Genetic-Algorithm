@@ -1,9 +1,35 @@
 
 #include <genetic_algo.h>
 
-GeneticAlgorithm::GeneticAlgorithm() {
+GeneticAlgorithm::GeneticAlgorithm(
+    int selectionMethod,
+    int crossoverMethod,
+    int mutationMethod,
+    int elitismMethod,
+    std::optional<InputMatrixes> matrixes
+) {
+    if (matrixes.has_value()) {
+        dMatrix = matrixes->dMatrix;
+        fMatrix = matrixes->fMatrix;
+        spaceSize = dMatrix.size();
+    } else {
+        InputMatrixes matrixes = generateMatrixes(spaceSize);
+        dMatrix = matrixes.dMatrix;
+        fMatrix = matrixes.fMatrix;
+    }
     generateInstances();
-    generateMatrixes();
+    this->selectionMethod = [selectionMethod, this]() {
+        return selectionMethod == 0 ? tournamentSelection() : rouletteSelection();
+        };
+    this->crossoverMethod = [crossoverMethod, this](std::vector<int> parent1, std::vector<int> parent2) {
+        return crossoverMethod == 0 ? halvedCrossover(parent1, parent2) : intertwinedCrossover(parent1, parent2);
+        };
+    this->mutationMethod = [mutationMethod, this](std::vector<int> instance) {
+        return mutationMethod == 0 ? swapMutate(instance) : invertMutate(instance);
+        };
+    this->elitismMethod = [elitismMethod, this](std::vector<Instance> oldInstances, std::vector<Instance> offspring) {
+        return elitismMethod == 0 ? ratioElitism(oldInstances, offspring) : rankedElitism(oldInstances, offspring);
+        };
 }
 
 void GeneticAlgorithm::generateInstances() {
@@ -17,9 +43,12 @@ void GeneticAlgorithm::generateInstances() {
     }
 }
 
-void GeneticAlgorithm::generateMatrixes() {
-    dMatrix.clear();
-    fMatrix.clear();
+InputMatrixes GeneticAlgorithm::readMatrixes(std::string file) {
+    std::ifstream input(file);
+    std::vector<std::vector<int>> dMatrix;
+    std::vector<std::vector<int>> fMatrix;
+    int spaceSize;
+    input >> spaceSize;
     for (int i = 0; i < spaceSize; i++) {
         dMatrix.push_back(std::vector<int>(spaceSize, 0));
         fMatrix.push_back(std::vector<int>(spaceSize, 0));
@@ -27,13 +56,48 @@ void GeneticAlgorithm::generateMatrixes() {
 
     for (int i = 0; i < spaceSize; i++) {
         for (int j = i + 1; j < spaceSize; j++) {
+            input >> dMatrix[i][j];
+            dMatrix[j][i] = dMatrix[i][j];
+            input >> fMatrix[i][j];
+            fMatrix[j][i] = fMatrix[i][j];
+        }
+    }
+    input.close();
+
+    return InputMatrixes{ dMatrix, fMatrix };
+}
+
+void GeneticAlgorithm::writeMatrixes(std::string file, InputMatrixes matrixes) {
+    std::ofstream output(file);
+    output << matrixes.fMatrix.size() << "\n";
+    for (int i = 0; i < matrixes.fMatrix.size(); i++) {
+        for (int j = i + 1; j < matrixes.fMatrix.size(); j++) {
+            output << matrixes.dMatrix[i][j] << " ";
+            output << matrixes.fMatrix[i][j] << " ";
+        }
+    }
+    output.close();
+}
+
+InputMatrixes GeneticAlgorithm::generateMatrixes(int spaceSize) {
+    std::vector<std::vector<int>> newdMatrix;
+    std::vector<std::vector<int>> newfMatrix;
+    for (int i = 0; i < spaceSize; i++) {
+        newdMatrix.push_back(std::vector<int>(spaceSize, 0));
+        newfMatrix.push_back(std::vector<int>(spaceSize, 0));
+    }
+
+    for (int i = 0; i < spaceSize; i++) {
+        for (int j = i + 1; j < spaceSize; j++) {
             const int size = 900;
             point a = { std::rand() % size, std::rand() % size };
             point b = { std::rand() % size, std::rand() % size };
-            dMatrix[i][j] = dMatrix[j][i] = round(sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2)));
-            fMatrix[i][j] = fMatrix[j][i] = std::rand() % (spaceSize * 2) + 1;
+            newdMatrix[i][j] = newdMatrix[j][i] = round(sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2)));
+            newfMatrix[i][j] = newfMatrix[j][i] = std::rand() % (spaceSize * 2) + 1;
         }
     }
+
+    return InputMatrixes{ newdMatrix, newfMatrix };
 }
 
 float GeneticAlgorithm::calculateFitness(Instance& instance) {
@@ -99,12 +163,17 @@ void GeneticAlgorithm::ratioElitism(std::vector<Instance> oldInstances, std::vec
         oldFitnessInstances.push_back({ oldFitnesses[i], oldInstances[i] });
     }
 
-    std::sort(oldFitnessInstances.begin(), oldFitnessInstances.end(), [&](
+    std::sort(oldFitnessInstances.begin(), oldFitnessInstances.end(), [](
         auto& i, auto& j
         ) {
             return i.first < j.first;
         }
     );
+
+    for (int i = 0; i < oldFitnessInstances.size(); i++) {
+        std::cout << oldFitnessInstances[i].first << " ";
+    }
+    std::cout << "\n";
 
     std::vector<Instance> newInstances;
     const int k = oldFitnessInstances.size() * elitismRatio;
@@ -201,16 +270,17 @@ Instance GeneticAlgorithm::invertMutate(Instance instance) {
 }
 
 void GeneticAlgorithm::nextGeneration() {
+    std::cout << "next generation\n";
     std::vector<Instance> offspring;
     const int k = instanceLimit * (elitismRatio);
     for (int i = 0; i < instanceLimit - k; i++) {
-        Instance parent1 = rouletteSelection();
-        Instance parent2 = rouletteSelection();
-        Instance child = halvedCrossover(parent1, parent2);
+        Instance parent1 = selectionMethod();
+        Instance parent2 = selectionMethod();
+        Instance child = crossoverMethod(parent1, parent2);
         if (float(rand()) / float(RAND_MAX) < mutationRate) {
-            child = swapMutate(child);
+            child = mutationMethod(child);
         }
         offspring.push_back(child);
     }
-    rankedElitism(instances, offspring);
+    elitismMethod(instances, offspring);
 }
