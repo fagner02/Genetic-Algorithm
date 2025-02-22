@@ -1,4 +1,3 @@
-#include <print.h>
 #include <ui/RoundRectangle.h>
 #include <structures.h>
 #include <genetic_algo.h>
@@ -204,36 +203,11 @@ int main() {
     auto outputFile = new TextBox(createLabelArgs{ font, .pad = 10 }, false, L"arquivo de saida");
 
     auto buttonColumn = Column(std::vector<DrawObject*>{
-        clickable.add(new ClickableLabel(createLabelArgs{ .font = font, .pad = 10, .text = L"Dijkstra" },
+        clickable.add(new ClickableLabel(createLabelArgs{ .font = font, .pad = 10, .text = L"Experimento 1" },
             [&]() {
-                selectAlgorithm(0);
+                selectExperiment(0);
             }
         )),
-            clickable.add(new ClickableLabel(createLabelArgs{ .font = font, .pad = 10, .text = L"Bfs" },
-                [&]() {
-                    selectAlgorithm(1);
-                }
-            )),
-            clickable.add(new ClickableLabel(createLabelArgs{ .font = font, .pad = 10, .text = L"Dfs" },
-                [&]() {
-                    selectAlgorithm(2);
-                }
-            )),
-            clickable.add(new ClickableLabel(createLabelArgs{ .font = font, .pad = 10, .text = L"Greedy" },
-                [&]() {
-                    selectAlgorithm(3);
-                }
-            )),
-            clickable.add(new ClickableLabel(createLabelArgs{ .font = font, .pad = 10, .text = L"A*" },
-                [&]() {
-                    selectAlgorithm(4);
-                }
-            )),
-            clickable.add(new ClickableLabel(createLabelArgs{ .font = font, .pad = 10, .text = L"Experimento 1" },
-                [&]() {
-                    selectExperiment(0);
-                }
-            )),
             clickable.add(new ClickableLabel(createLabelArgs{ .font = font, .pad = 10, .text = L"Experimento 2" },
                 [&]() {
                     selectExperiment(1);
@@ -292,6 +266,12 @@ int main() {
         ).detach();
         };
 
+    Parameters params[4] = {
+        {SelectionMethod::ROULETTE, CrossoverMethod::HALVED, MutationMethod::SWAP, ElitismMethod::RANKED},
+        {SelectionMethod::ROULETTE, CrossoverMethod::HALVED, MutationMethod::INVERT, ElitismMethod::RANKED},
+        {SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED},
+        {SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::INVERT, ElitismMethod::RANKED}
+    };
 
     auto row = new Row(
         std::vector<DrawObject*>{ checkLabel, checkButton }
@@ -300,198 +280,40 @@ int main() {
     centerBox->child = (
         new Column(
             std::vector<DrawObject*>{instructionText,
-            clickable.add(new ClickableLabel(createLabelArgs{ .font = font, .pad = 10, .text = L"utilizar arquivo txt" },
-                [&]() {
-                    centerBox->visible = false;
-                    std::vector<point> start_points;
-                    std::vector<point> target_points;
-                    std::vector<int> cost_ids;
-                    std::vector<int> heuristic_ids;
-                    std::vector<std::vector<int>> orders;
-                    std::vector<std::set<point>> constraints;
-                    using convert_type = std::codecvt_utf8<wchar_t>;
-                    std::wstring_convert<convert_type, wchar_t> converter;
-                    std::string file_name = processFileName(converter.to_bytes(inputFile->value), "input.txt", ".txt");
-                    std::ifstream file(file_name);
-                    if (file.fail()) {
-                        setToastText(L"Arquivo de entrada nao encontrado");
-                        return;
-                    }
-                    int count;
-                    file >> count;
-
-                    for (int i = 0;i < count;i++) {
-                        start_points.push_back(point());
-                        target_points.push_back(point());
-                        cost_ids.push_back(0);
-                        heuristic_ids.push_back(0);
-                        orders.push_back(std::vector<int>());
-                        constraints.push_back(std::set<point>());
-
-                        file >> start_points[i].x >> start_points[i].y;
-                        std::cout << start_points[i].x << " " << start_points[i].y << std::endl;
-                        file >> target_points[i].x >> target_points[i].y;
-                        file >> cost_ids[i];
-                        file >> heuristic_ids[i];
-                        for (int j = 0;j < 4;j++) {
-                            int k;
-                            file >> k;
-                            orders[i].push_back(k);
-                        }
-                        int goal_count;
-                        file >> goal_count;
-                        for (int j = 0;j < goal_count;j++) {
-                            point p;
-                            file >> p.x >> p.y;
-                            constraints[i].insert(p);
-                        }
-                    }
-                    file.close();
-
-                    std::string output_file = processFileName(converter.to_bytes(outputFile->value), "out.csv", ".csv");
-                    if (selectingAlgorithm) {
-                        selectingAlgorithm = false;
-                        selectingExperiment = false;
-
-                        std::thread(
-                            [start_points,
-                            target_points,
-                            count,
-                            constraints,
-                            orders,
-                            heuristic_ids,
-                            output_file,
-                            selectedAlgorithm,
-                            cost_ids,
-                            &shouldDraw,
-                            shouldAnimate,
-                            &setToastText]() {
-                            std::stringstream ss;
-                            for (int i = 0; i < count;i++) {
-                                // fill_blocks(blocks, constraints[i], start_points[i], target_points[i]);
-                                switch (selectedAlgorithm) {
-                                case 0: {
-                                    // ss << dijkstra(start_points[i], target_points[i], costs[cost_ids[i]], blocks, std::ref(shouldDraw), 0, constraints[i], shouldAnimate) << "\n";
-                                    break;
-                                }
-                                default:
-                                    break;
-                                }
-                            }
-                            std::ofstream out(output_file);
-                            out << ss.str();
-                            out.close();
-                            setToastText(L"Arquivo de saída gerado");
-                        }
-                        ).detach();
-                    }
-                    if (selectingExperiment) {
-                        selectingAlgorithm = false;
-                        selectingExperiment = false;
-                        std::thread(
-                            [start_points, target_points, orders, constraints, selectedExperiment, output_file, &setToastText]() {
-                                switch (selectedExperiment) {
-                                case 0: {
-                                    experiment1(start_points, target_points, setToastText, output_file);
-                                    break;
-                                }
-                                case 1: {
-                                    experiment2(start_points, target_points, setToastText, output_file);
-                                    break;
-                                }
-                                case 2: {
-                                    experiment3(start_points, target_points, setToastText, output_file);
-                                    break;
-                                }
-                                case 3: {
-                                    experiment4(start_points, target_points, orders, setToastText, output_file);
-                                    break;
-                                }
-                                case 4: {
-                                    experiment5(start_points, target_points, orders, constraints, setToastText, output_file);
-                                    break;
-                                }
-                                default:
-                                    break;
-                                    setToastText(L"Arquivo de saída gerado");
-                                }
-                            }
-                        ).detach();
-                    }
-                }
-            )),
             clickable.add(new ClickableLabel(createLabelArgs{ .font = font, .pad = 10, .text = L"utilizar entrada aleatória" },
                 [&]() {
                     centerBox->visible = false;
-                    using convert_type = std::codecvt_utf8<wchar_t>;
-                    std::wstring_convert<convert_type, wchar_t> converter;
-                    std::string output_file = processFileName(converter.to_bytes(outputFile->value), "out.csv", ".csv");
-                    if (selectingAlgorithm) {
-                        selectingAlgorithm = false;
-                        selectingExperiment = false;
-                        std::thread(
-                            [&shouldDraw, selectedAlgorithm, output_file, shouldAnimate, &setToastText]() {
-                                // srand((unsigned)time(NULL));
-                                // point start = { rand() % blockNum, rand() % blocks.size() };
-                                // point target = { rand() % blocks.size(), rand() % blocks.size() };
-                                // std::set<point> constraints = {};
-                                // while (constraints.size() < 4) {
-                                //     constraints.insert({ rand() % blocks.size(), rand() % blocks.size() });
-                                // }
-                                // int cost_id = rand() % 4;
-                                // int heuristic_id = rand() % 2;
-                                std::ofstream save("random_input.txt");
-                                save << "1\n";
-                                // save << start.x << " " << start.y << "\n";
-                                // save << target.x << " " << target.y << "\n";
-                                // save << cost_id << "\n";
-                                // save << heuristic_id << "\n";
-                                // save << "0 1 2 3\n";
-                                // save << constraints.size() << "\n";
-                                // for (auto& c : constraints) {
-                                //     save << c.x << " " << c.y << "\n";
-                                // }
-                                // fill_blocks(blocks, constraints, start, target);
-                                std::ofstream out(output_file);
-                                switch (selectedAlgorithm) {
-                                case 0: {
-                                    // out << dijkstra(start, target, costs[cost_id], blocks, std::ref(shouldDraw), cost_id, constraints, shouldAnimate) << "\n";
-                                    break;
-                                }
 
-                                default:
-                                    break;
-                                }
-                                out.close();
-                                setToastText(L"Arquivo de saída gerado");
-                            }
-                        ).detach();
-                    }
                     if (selectingExperiment) {
                         selectingAlgorithm = false;
                         selectingExperiment = false;
                         auto a1 = std::thread(
-                            [&shouldDraw, &selectedExperiment, &loading, output_file, &setToastText]() {
+                            [&shouldDraw, &params, &selectedExperiment, &loading, &setToastText]() {
                                 loading = true;
                                 switch (selectedExperiment) {
                                 case 0: {
+                                    std::string output_file = "out1.csv";
                                     experiment1(output_file);
                                     break;
                                 }
                                 case 1: {
+                                    std::string output_file = "out2.csv";
                                     experiment2(output_file);
                                     break;
                                 }
                                 case 2: {
+                                    std::string output_file = "out3.csv";
                                     experiment3(output_file);
                                     break;
                                 }
                                 case 3: {
+                                    std::string output_file = "out4.csv";
                                     experiment4(output_file);
                                     break;
                                 }
                                 case 4: {
-                                    experiment5(output_file);
+                                    std::string output_file = "out5.csv";
+                                    experiment5(output_file, params);
                                     break;
                                 }
                                 default:
@@ -646,7 +468,6 @@ int main() {
                 window.draw(*button);
             }
             window.display();
-            ga.nextGeneration();
             // shouldDraw = false;
         }
     }

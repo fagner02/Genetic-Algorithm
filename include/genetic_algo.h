@@ -6,6 +6,8 @@
 #include <functional>
 #include <fstream>
 #include <optional>
+#include <cfloat>
+#include <sstream>
 
 #pragma once
 
@@ -36,11 +38,14 @@ struct InputMatrixes {
     std::vector<std::vector<int>> fMatrix;
 };
 
+int stringToEnum(std::string str);
+
 class GeneticAlgorithm {
 public:
-    const int instanceLimit = 100;
+    const int generations = 150;
+    const int instanceLimit = 25;
     int spaceSize = 9;
-    const float elitismRatio = 0.1;
+    float elitismRatio = 0.1;
     const float mutationRate = 0.01;
     std::vector<Instance> instances;
     std::vector<std::vector<int>> dMatrix;
@@ -51,11 +56,17 @@ public:
     std::function<Instance(Instance)> mutationMethod;
     std::function<void(std::vector<Instance>, std::vector<Instance>)> elitismMethod;
 
+    int selectionMethodIndex;
+    int crossoverMethodIndex;
+    int mutationMethodIndex;
+    int elitismMethodIndex;
+
     GeneticAlgorithm(
         int selectionMethod,
         int crossoverMethod,
         int mutationMethod,
         int elitismMethod,
+        int spaceSize = 9,
         std::optional<InputMatrixes> matrixes = std::nullopt
     );
 
@@ -65,7 +76,11 @@ public:
 
     static InputMatrixes readMatrixes(std::string file);
 
+    std::string matrixesToString();
+
     static void writeMatrixes(std::string file, InputMatrixes matrixes);
+
+    std::string generateLog();
 
     float calculateFitness(Instance& instance);
 
@@ -88,6 +103,8 @@ public:
     void rankedElitism(std::vector<Instance> oldInstances, std::vector<Instance> offspring);
 
     void nextGeneration();
+
+    void run(int generations);
 
     std::vector<float> getAllInstancesFitness();
 };

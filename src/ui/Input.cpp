@@ -254,9 +254,6 @@ void Input::TextEntered(sf::Uint32 unicode) {
                 input->value.insert(input->value.begin() + input->cursor, static_cast<char>(unicode));
                 input->cursor++;
             }
-            if (input->value.size() == 0) {
-                std::cout << "sizeeee\n";
-            }
             cursorChanged(input);
         }
     }

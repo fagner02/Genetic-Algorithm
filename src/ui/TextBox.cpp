@@ -104,7 +104,6 @@ float TextBox::getScrollSub() const {
     float offset = textBox.height - (containerBox.height - 3.0f * padding);
     if (offset < 0) offset = 0;
     float sub = offset * (scrollThumbBox.top - containerBox.top - padding) / diff;
-    //std::cout << sub << "\n";
     return sub;
 }
 

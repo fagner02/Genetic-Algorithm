@@ -6,18 +6,26 @@ GeneticAlgorithm::GeneticAlgorithm(
     int crossoverMethod,
     int mutationMethod,
     int elitismMethod,
+    int spaceSize,
     std::optional<InputMatrixes> matrixes
 ) {
+    this->spaceSize = spaceSize;
     if (matrixes.has_value()) {
         dMatrix = matrixes->dMatrix;
         fMatrix = matrixes->fMatrix;
-        spaceSize = dMatrix.size();
+        if (dMatrix.size() != spaceSize || fMatrix.size() != spaceSize) {
+            throw std::invalid_argument("Matrixes size must be equal to space size");
+        }
     } else {
         InputMatrixes matrixes = generateMatrixes(spaceSize);
         dMatrix = matrixes.dMatrix;
         fMatrix = matrixes.fMatrix;
     }
     generateInstances();
+    selectionMethodIndex = selectionMethod;
+    crossoverMethodIndex = crossoverMethod;
+    mutationMethodIndex = mutationMethod;
+    elitismMethodIndex = elitismMethod;
     this->selectionMethod = [selectionMethod, this]() {
         return selectionMethod == 0 ? tournamentSelection() : rouletteSelection();
         };
@@ -28,6 +36,9 @@ GeneticAlgorithm::GeneticAlgorithm(
         return mutationMethod == 0 ? swapMutate(instance) : invertMutate(instance);
         };
     this->elitismMethod = [elitismMethod, this](std::vector<Instance> oldInstances, std::vector<Instance> offspring) {
+        if (elitismMethod == ElitismMethod::RANKED) {
+            elitismRatio = 0;
+        }
         return elitismMethod == 0 ? ratioElitism(oldInstances, offspring) : rankedElitism(oldInstances, offspring);
         };
 }
@@ -138,7 +149,7 @@ Instance GeneticAlgorithm::intertwinedCrossover(Instance parent1, Instance paren
     std::set<int> child;
     int i = 0;
     int j = 0;
-    while (child.size() == parent1.size()) {
+    while (child.size() != parent1.size()) {
         while (i < parent1.size() && child.find(parent1[i]) != child.end()) {
             i++;
         }
@@ -169,11 +180,6 @@ void GeneticAlgorithm::ratioElitism(std::vector<Instance> oldInstances, std::vec
             return i.first < j.first;
         }
     );
-
-    for (int i = 0; i < oldFitnessInstances.size(); i++) {
-        std::cout << oldFitnessInstances[i].first << " ";
-    }
-    std::cout << "\n";
 
     std::vector<Instance> newInstances;
     const int k = oldFitnessInstances.size() * elitismRatio;
@@ -253,6 +259,7 @@ Instance GeneticAlgorithm::rouletteSelection() {
 }
 
 Instance GeneticAlgorithm::swapMutate(Instance instance) {
+    srand(time(NULL));
     int i = std::rand() % instance.size();
     int j = std::rand() % instance.size();
     std::iter_swap(instance.begin() + i, instance.begin() + j);
@@ -270,7 +277,6 @@ Instance GeneticAlgorithm::invertMutate(Instance instance) {
 }
 
 void GeneticAlgorithm::nextGeneration() {
-    std::cout << "next generation\n";
     std::vector<Instance> offspring;
     const int k = instanceLimit * (elitismRatio);
     for (int i = 0; i < instanceLimit - k; i++) {
@@ -283,4 +289,74 @@ void GeneticAlgorithm::nextGeneration() {
         offspring.push_back(child);
     }
     elitismMethod(instances, offspring);
+}
+
+void GeneticAlgorithm::run(int generations) {
+    for (int i = 0; i < generations; i++) {
+        nextGeneration();
+    }
+}
+
+std::string GeneticAlgorithm::matrixesToString() {
+    std::stringstream ss;
+    ss << fMatrix.size() << "\n";
+    for (int i = 0; i < fMatrix.size(); i++) {
+        for (int j = i + 1; j < fMatrix.size(); j++) {
+            ss << dMatrix[i][j] << " ";
+            ss << fMatrix[i][j] << " ";
+        }
+    }
+    return ss.str();
+}
+
+std::string GeneticAlgorithm::generateLog() {
+    std::stringstream ss;
+
+    ss << instanceLimit << ",";
+    ss << spaceSize << ",";
+    ss << elitismRatio << ",";
+    ss << mutationRate << ",";
+    ss << (selectionMethodIndex == SelectionMethod::ROULETTE ? "ROULETTE" : "TOURNAMENT") << ",";
+    ss << (crossoverMethodIndex == CrossoverMethod::HALVED ? "HALVED" : "INTERTWINED") << ",";
+    ss << (mutationMethodIndex == MutationMethod::SWAP ? "SWAP" : "INVERT") << ",";
+    ss << (elitismMethodIndex == ElitismMethod::RATIO ? "RATIO" : "RANKED") << ",";
+    auto fitnesses = getAllInstancesFitness();
+    float highestFitness = 0;
+    float lowestFitness = FLT_MAX;
+    float sum = 0;
+    for (auto& fitness : fitnesses) {
+        if (fitness > highestFitness) {
+            highestFitness = fitness;
+        }
+        if (fitness < lowestFitness) {
+            lowestFitness = fitness;
+        }
+        sum += fitness;
+    }
+    float averageFitness = sum / instanceLimit;
+    ss << highestFitness << ",";
+    ss << lowestFitness << ",";
+    ss << averageFitness << "\n";
+    return ss.str();
+}
+
+int stringToEnum(std::string str) {
+    if (str == "TOURNAMENT") {
+        return SelectionMethod::TOURNAMENT;
+    } else if (str == "ROULETTE") {
+        return SelectionMethod::ROULETTE;
+    } else if (str == "HALVED") {
+        return CrossoverMethod::HALVED;
+    } else if (str == "INTERTWINED") {
+        return CrossoverMethod::INTERTWINED;
+    } else if (str == "SWAP") {
+        return MutationMethod::SWAP;
+    } else if (str == "INVERT") {
+        return MutationMethod::INVERT;
+    } else if (str == "RATIO") {
+        return ElitismMethod::RATIO;
+    } else if (str == "RANKED") {
+        return ElitismMethod::RANKED;
+    }
+    return -1;
 }
