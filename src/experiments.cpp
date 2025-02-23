@@ -8,11 +8,11 @@ void experiment1(std::string output_file) {
     }
     file << "iteration,instanceLimit,spaceSize,elitismRatio,mutationRate,selectionMethod,crossoverMethod,mutationMethod,elitismMethod,highestFitness,lowestFitness,averageFitness\n";
 
+    InputMatrixes matrixes = GeneticAlgorithm::generateMatrixes(10);
     for (int i = 0; i < 20; i++) {
-        GeneticAlgorithm ga(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED, 10);
+        GeneticAlgorithm ga(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED, 10, matrixes);
         ga.run(150);
-        GeneticAlgorithm ga2(SelectionMethod::TOURNAMENT, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED, 10,
-            InputMatrixes{ ga.dMatrix, ga.fMatrix });
+        GeneticAlgorithm ga2(SelectionMethod::TOURNAMENT, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED, 10, matrixes);
         ga2.run(150);
         std::cout << "instance " << i << " done\n";
         file << i << "," << ga.generateLog();
@@ -30,11 +30,11 @@ void experiment2(std::string output_file) {
     }
     file << "iteration,instanceLimit,spaceSize,elitismRatio,mutationRate,selectionMethod,crossoverMethod,mutationMethod,elitismMethod,highestFitness,lowestFitness,averageFitness\n";
 
+    InputMatrixes matrixes = GeneticAlgorithm::generateMatrixes(10);
     for (int i = 0; i < 20; i++) {
-        GeneticAlgorithm ga(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED, 10);
+        GeneticAlgorithm ga(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED, 10, matrixes);
         ga.run(150);
-        GeneticAlgorithm ga2(SelectionMethod::ROULETTE, CrossoverMethod::HALVED, MutationMethod::SWAP, ElitismMethod::RANKED, 10,
-            InputMatrixes{ ga.dMatrix, ga.fMatrix });
+        GeneticAlgorithm ga2(SelectionMethod::ROULETTE, CrossoverMethod::HALVED, MutationMethod::SWAP, ElitismMethod::RANKED, 10, matrixes);
         ga2.run(150);
         std::cout << "instance " << i << " done\n";
         file << i << "," << ga.generateLog();
@@ -53,11 +53,11 @@ void experiment3(std::string output_file) {
 
     file << "iteration,instanceLimit,spaceSize,elitismRatio,mutationRate,selectionMethod,crossoverMethod,mutationMethod,elitismMethod,highestFitness,lowestFitness,averageFitness\n";
 
+    InputMatrixes matrixes = GeneticAlgorithm::generateMatrixes(10);
     for (int i = 0; i < 20; i++) {
-        GeneticAlgorithm ga(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED, 10);
+        GeneticAlgorithm ga(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED, 10, matrixes);
         ga.run(150);
-        GeneticAlgorithm ga2(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RATIO, 10,
-            InputMatrixes{ ga.dMatrix, ga.fMatrix });
+        GeneticAlgorithm ga2(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RATIO, 10, matrixes);
         ga2.run(150);
         std::cout << "instance " << i << " done\n";
         file << i << "," << ga.generateLog();
@@ -75,11 +75,11 @@ void experiment4(std::string output_file) {
 
     file << "iteration,instanceLimit,spaceSize,elitismRatio,mutationRate,selectionMethod,crossoverMethod,mutationMethod,elitismMethod,highestFitness,lowestFitness,averageFitness\n";
 
+    InputMatrixes matrixes = GeneticAlgorithm::generateMatrixes(10);
     for (int i = 0; i < 20; i++) {
-        GeneticAlgorithm ga(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED, 10);
+        GeneticAlgorithm ga(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED, 10, matrixes);
         ga.run(150);
-        GeneticAlgorithm ga2(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::INVERT, ElitismMethod::RANKED, 10,
-            InputMatrixes{ ga.dMatrix, ga.fMatrix });
+        GeneticAlgorithm ga2(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::INVERT, ElitismMethod::RANKED, 10, matrixes);
         ga2.run(150);
         std::cout << "instance " << i << " done\n";
         file << i << "," << ga.generateLog();

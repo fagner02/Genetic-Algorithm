@@ -42,8 +42,8 @@ int stringToEnum(std::string str);
 
 class GeneticAlgorithm {
 public:
-    const int generations = 150;
-    const int instanceLimit = 25;
+    const int generations = 600;
+    const int instanceLimit = 20;
     int spaceSize = 9;
     float elitismRatio = 0.1;
     const float mutationRate = 0.01;
