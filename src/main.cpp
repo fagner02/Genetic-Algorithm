@@ -267,9 +267,9 @@ int main() {
         };
 
     Parameters params[4] = {
-        {SelectionMethod::ROULETTE, CrossoverMethod::HALVED, MutationMethod::SWAP, ElitismMethod::RANKED},
-        {SelectionMethod::ROULETTE, CrossoverMethod::HALVED, MutationMethod::INVERT, ElitismMethod::RANKED},
         {SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RANKED},
+        {SelectionMethod::ROULETTE, CrossoverMethod::HALVED, MutationMethod::SWAP, ElitismMethod::RANKED},
+        {SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RATIO},
         {SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::INVERT, ElitismMethod::RANKED}
     };
 

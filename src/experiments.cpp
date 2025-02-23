@@ -108,20 +108,19 @@ void experiment5(std::string output_file, Parameters parameters[4]) {
             GeneticAlgorithm ga(parameters[i].selectionMethod, parameters[i].crossoverMethod, parameters[i].mutationMethod, parameters[i].elitismMethod, n, matrixes);
             std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
             long elapsed_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-            file << elapsed_milliseconds << ",";
+            file << elapsed_milliseconds << (i < 3 ? "," : "");
             if (elapsed_milliseconds > highestTime) {
                 highestTime = elapsed_milliseconds;
             }
+            std::cout << "alg " << i << " done\n";
         }
+        std::cout << "spaceSize " << n << " done\n";
         file << "\n";
-        if (highestTime > 12000) {
+        if (highestTime > 1000) {
             break;
         }
-        n += 5;
+        n += 100;
     }
 
-    std::ofstream out("experiment5_random_input.txt");
-
-    out.close();
     file.close();
 }
