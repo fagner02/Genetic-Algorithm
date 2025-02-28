@@ -44,6 +44,7 @@ GeneticAlgorithm::GeneticAlgorithm(
 }
 
 void GeneticAlgorithm::generateInstances() {
+    instances.clear();
     for (int i = 0; i < instanceLimit; i++) {
         Instance instance;
         for (int j = 0; j < spaceSize; j++) {
@@ -78,6 +79,14 @@ InputMatrixes GeneticAlgorithm::readMatrixes(std::string file) {
     return InputMatrixes{ dMatrix, fMatrix };
 }
 
+void GeneticAlgorithm::loadMatrixes(std::string file) {
+    InputMatrixes matrixes = readMatrixes(file);
+    dMatrix = matrixes.dMatrix;
+    fMatrix = matrixes.fMatrix;
+    spaceSize = dMatrix.size();
+    generateInstances();
+}
+
 void GeneticAlgorithm::writeMatrixes(std::string file, InputMatrixes matrixes) {
     std::ofstream output(file);
     output << matrixes.fMatrix.size() << "\n";
@@ -100,9 +109,10 @@ InputMatrixes GeneticAlgorithm::generateMatrixes(int spaceSize) {
 
     for (int i = 0; i < spaceSize; i++) {
         for (int j = i + 1; j < spaceSize; j++) {
-            const int size = 900;
+            const int size = 30;
             point a = { std::rand() % size, std::rand() % size };
             point b = { std::rand() % size, std::rand() % size };
+            std::cout << a.x << " " << a.y << " " << b.x << " " << b.y << std::endl;
             newdMatrix[i][j] = newdMatrix[j][i] = round(sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2)));
             newfMatrix[i][j] = newfMatrix[j][i] = std::rand() % (spaceSize * 2) + 1;
         }
@@ -129,13 +139,16 @@ std::vector<float> GeneticAlgorithm::getAllInstancesFitness() {
     return fitnesses;
 }
 
-void GeneticAlgorithm::getFittest() {
+Fittest GeneticAlgorithm::getFittest() {
     Instance fittest = instances[0];
+    int index = 0;
     for (int i = 1; i < instanceLimit; i++) {
         if (calculateFitness(instances[i]) < calculateFitness(fittest)) {
             fittest = instances[i];
+            index = i;
         }
     }
+    return { fittest, calculateFitness(fittest), index };
 }
 
 Instance GeneticAlgorithm::halvedCrossover(Instance parent1, Instance parent2) {
@@ -259,10 +272,12 @@ Instance GeneticAlgorithm::rouletteSelection() {
 }
 
 Instance GeneticAlgorithm::swapMutate(Instance instance) {
-    srand(time(NULL));
-    int i = std::rand() % instance.size();
-    int j = std::rand() % instance.size();
-    std::iter_swap(instance.begin() + i, instance.begin() + j);
+    for (int k = 0; k < 4; k++) {
+        int i = std::rand() % instance.size();
+        int j = std::rand() % instance.size();
+
+        std::iter_swap(instance.begin() + i, instance.begin() + j);
+    }
     return instance;
 }
 

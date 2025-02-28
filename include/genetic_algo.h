@@ -38,15 +38,21 @@ struct InputMatrixes {
     std::vector<std::vector<int>> fMatrix;
 };
 
+struct Fittest {
+    Instance instance;
+    float fitness;
+    int index;
+};
+
 int stringToEnum(std::string str);
 
 class GeneticAlgorithm {
 public:
     const int generations = 600;
-    const int instanceLimit = 20;
-    int spaceSize = 9;
+    const int instanceLimit = 300;
+    int spaceSize = 10;
     float elitismRatio = 0.1;
-    const float mutationRate = 0.01;
+    const float mutationRate = 0.5;
     std::vector<Instance> instances;
     std::vector<std::vector<int>> dMatrix;
     std::vector<std::vector<int>> fMatrix;
@@ -76,6 +82,8 @@ public:
 
     static InputMatrixes readMatrixes(std::string file);
 
+    void loadMatrixes(std::string file);
+
     std::string matrixesToString();
 
     static void writeMatrixes(std::string file, InputMatrixes matrixes);
@@ -84,7 +92,7 @@ public:
 
     float calculateFitness(Instance& instance);
 
-    void getFittest();
+    Fittest getFittest();
 
     Instance tournamentSelection();
 

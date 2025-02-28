@@ -1,13 +1,16 @@
 #include <ui/Row.h>
 
 Row::Row(std::vector<DrawObject*> children) {
-    childrenContainer = children;
+    this->children = children;
+    for (auto& child : children) {
+        child->parent = this;
+    }
     updateLayout();
 }
 
 void Row::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     if (!visible) return;
-    for (auto& child : childrenContainer) {
+    for (auto& child : children) {
         child->draw(target, states);
     }
 }
@@ -15,14 +18,14 @@ void Row::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 sf::Vector2f Row::calculateSize() const {
     float width = 0;
     float height = 0;
-    for (auto& child : childrenContainer) {
+    for (auto& child : children) {
         auto size = child->calculateSize();
         width += size.x;
         if (size.y > height) {
             height = size.y;
         }
     }
-    width += gap * (childrenContainer.size() - 1);
+    width += gap * (children.size() - 1);
     return sf::Vector2f(width, height);
 }
 
@@ -34,7 +37,7 @@ void Row::setPosition(sf::Vector2f position) {
 void Row::updateLayout() {
     float height = 0;
     float x = 0;
-    for (auto& child : childrenContainer) {
+    for (auto& child : children) {
         child->setPosition(sf::Vector2f(position.x + x, position.y));
         auto childSize = child->calculateSize();
         x += childSize.x + gap;
@@ -42,7 +45,7 @@ void Row::updateLayout() {
             height = childSize.y;
         }
     }
-    for (auto& child : childrenContainer) {
+    for (auto& child : children) {
         auto childSize = child->calculateSize();
         child->setSize(sf::Vector2f(childSize.x, height));
     }
@@ -50,6 +53,7 @@ void Row::updateLayout() {
 }
 
 void Row::addChild(DrawObject* child) {
-    childrenContainer.push_back(child);
+    children.push_back(child);
+    child->parent = this;
     updateLayout();
 }

@@ -13,6 +13,8 @@ public:
 
     void updateLayout();
 
+    void update() override;
+
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     void setSize(sf::Vector2f size);

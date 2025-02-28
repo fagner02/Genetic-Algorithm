@@ -29,51 +29,43 @@
 #include <ui/ClickableLabel.h>
 #include <ui/Clickable.h>
 #include <ui/Column.h>
+#include <ui/Stack.h>
+#include <ui/Root.h>
 #include <codecvt>
 
 void draw(
-    sf::Vector2u& size,
-    sf::RenderWindow& window,
-    float& containerSize,
-    float& blockSize,
-    std::vector<float> fitnesses,
-    std::vector<std::vector<block>> blocks,
+    Column* bloc,
+    int blockNum,
     sf::Vector2f scale,
-    sf::Vector2f translate
+    sf::Vector2f translate,
+    GeneticAlgorithm& ga
 ) {
-    window.clear(sf::Color(225, 225, 225));
+    auto fitnesses = ga.getAllInstancesFitness();
+    for (int i = 0; i < 19; i++) {
+        if (i * 5 >= fitnesses.size()) {
+            break;
+        }
+        Row* row = new Row(std::vector<DrawObject*>());
+        bloc->addChild(row);
+        bool shouldBreak = false;
+        for (int j = 0; j < 5; j++) {
+            int x = j;
+            int y = i;
+            int index = y * 5 + x;
 
-    for (int y = 0; y < blocks.size(); y++) {
-        for (int x = 0; x < blocks.size(); x++) {
-
-            int yindex = blocks.size() - y - 1;
-
-            int fitnessIndex = yindex * blocks.size() + x;
-            if (fitnessIndex >= fitnesses.size()) {
+            if (index >= fitnesses.size()) {
                 break;
             }
-            point pos = {
-                (x * 50.0 + x * 10.0 + size.x / 2.0 - containerSize / 2.0 + translate.x) * scale.x,
-               (yindex * 50.0 + yindex * 10.0 + size.y / 2.0 - containerSize / 2.0 + translate.y) * scale.y
-            };
-            blocks[x][y].shape.setScale(scale);
-            blocks[x][y].text.setScale(scale);
-            blocks[x][y].shape.setPosition(pos.x, pos.y);
-            auto t = blocks[x][y].shape.getLocalBounds();
-            window.draw(blocks[x][y].shape);
+            std::wstringstream ss;
+            for (int k = 0;k < ga.instances[index].size();k++) {
+                ss << ga.instances[index][k] << ",";
+            }
 
-            std::stringstream ss;
-            ss << std::fixed << std::setprecision(0) << fitnesses[fitnessIndex];
-            blocks[x][y].text.setString(ss.str());
-
-            auto textSize = blocks[x][y].text.getLocalBounds();
-            blocks[x][y].text.setOrigin(textSize.getPosition());
-            blocks[x][y].text.setPosition(
-                (pos.x + (t.width * scale.x) / 2.0 - (textSize.width * scale.x) / 2.0),
-                (pos.y + (t.height * scale.y) / 2.0 - (textSize.height * scale.y) / 2.0)
-            );
-
-            window.draw(blocks[x][y].text);
+            ss << ": ";
+            ss << std::fixed << std::setprecision(0) << fitnesses[index];
+            std::wstring text = ss.str();
+            ((Label*)((Row*)bloc->children[i])->children[j])->autoSize = true;
+            ((Label*)((Row*)bloc->children[i])->children[j])->setText(text);
         }
     }
 }
@@ -89,6 +81,7 @@ std::string processFileName(std::string file_name, std::string default_name, std
 }
 
 int main() {
+    srand(time(NULL));
     std::cout << "Hello, World!\n";
 
     sf::ContextSettings settings;
@@ -106,7 +99,7 @@ int main() {
 
     sf::Vector2u size = window.getSize();
 
-    GeneticAlgorithm ga(SelectionMethod::TOURNAMENT, CrossoverMethod::HALVED, MutationMethod::SWAP, ElitismMethod::RATIO);
+    GeneticAlgorithm ga(SelectionMethod::ROULETTE, CrossoverMethod::INTERTWINED, MutationMethod::SWAP, ElitismMethod::RATIO);
 
     const int blockNum = ceil(sqrt(ga.instanceLimit));
 
@@ -116,19 +109,36 @@ int main() {
 
     bool shouldDraw = true;
 
-    std::vector<std::vector<block>> blocks;
+    auto fitnesses = ga.getAllInstancesFitness();
 
-    for (int i = 0; i < blockNum; i++) {
-        blocks.push_back(std::vector<block>());
-        for (int j = 0; j < blockNum; j++) {
-            blocks[i].push_back(block{
-                sf::RoundedRectangleShape(sf::Vector2f(50, 50), 10, 20),
-                sf::Text()
-                });
-            blocks[i][j].shape.setFillColor(sf::Color(100, 100, 100));
-            blocks[i][j].text.setFont(font);
-            blocks[i][j].text.setFillColor(sf::Color(255, 255, 255));
-            blocks[i][j].text.setCharacterSize(18);
+    // ga.writeMatrixes("input.txt", ga.generateMatrixes(10));
+    ga.loadMatrixes("input.txt");
+
+    auto bloc = new Column(std::vector<DrawObject*>(), 5);
+    for (int i = 0; i < 19; i++) {
+        if (i * 5 >= fitnesses.size()) {
+            break;
+        }
+        Row* row = new Row(std::vector<DrawObject*>());
+        bloc->addChild(row);
+        bool shouldBreak = false;
+        for (int j = 0; j < 5; j++) {
+            int x = j;
+            int y = i;
+            int index = y * 5 + x;
+
+            if (index >= fitnesses.size()) {
+                break;
+            }
+            std::wstringstream ss;
+            for (int k = 0;k < ga.instances[index].size();k++) {
+                ss << ga.instances[index][k] << ",";
+            }
+
+            ss << ": ";
+            ss << std::fixed << std::setprecision(0) << fitnesses[index];
+            std::wstring text = ss.str();
+            row->addChild(new Label(createLabelArgs{ font, .pad = 10, .text = text, .outlineThickness = 0 }));
         }
     }
 
@@ -159,19 +169,13 @@ int main() {
         }
     ));
 
+
     auto instructionText = new InstructionText(L"", font);
 
-    std::map<int, std::wstring> algorithms = {
-               {0, L"Dijkstra"},
-               {1, L"Bfs"},
-               {2, L"Dfs"},
-               {3, L"Greedy Search"},
-               {4, L"A*"}
-    };
     auto setInstruction = [&]() {
         std::wstring title;
         if (selectingAlgorithm) {
-            title = L"Algoritmo " + algorithms[selectedAlgorithm];
+            title = L"Algoritmo";
         } else {
             title = L"Experimento " + std::to_wstring(selectedExperiment + 1);
         }
@@ -233,6 +237,11 @@ int main() {
     }, 5);
     buttonColumn.margin = 10;
     buttonColumn.updateLayout();
+
+    auto root = new Root(std::vector<DrawObject*>{
+        new Stack({ &buttonColumn, centerBox, new CenterBox(bloc) }),
+    });
+    root->setSize(sf::Vector2f(size));
 
     Label toastElem(createLabelArgs{ .font = font, .pad = 10, .text = L"", .boxColor = sf::Color(80,80,80), .outlineThickness = 0 });
     toastElem.visible = false;
@@ -356,7 +365,7 @@ int main() {
                 sf::View view(sf::FloatRect(0, 0, size.x, size.y));
                 window.setView(view);
                 translate = { size.x * scale.x, size.y * scale.y };
-                centerBox->setSize(sf::Vector2f(size));
+                root->setSize(sf::Vector2f(size));
                 inputs.size = size;
             }
             if (event.type == sf::Event::MouseMoved && !loading) {
@@ -437,7 +446,9 @@ int main() {
         }
 
         if (shouldDraw) {
-            draw(size, window, containerSize, blockSize, ga.getAllInstancesFitness(), blocks, scale, translate);
+            window.clear(sf::Color(225, 225, 225));
+
+            draw(bloc, blockNum, scale, translate, ga);
 
             if (toastElem.visible) {
                 toastElem.text.setString(toastText);
@@ -450,10 +461,15 @@ int main() {
                 window.draw(toastElem.text);
             }
 
-            if (loading) {
+
+            // window.draw(buttonColumn);
+            window.draw(*root);
+            for (auto& button : inputs.inputs) {
+                window.draw(*button);
+            }if (loading || true) {
                 sf::Text loadingText;
                 loadingText.setFont(font);
-                loadingText.setString("Executando...");
+                loadingText.setString(std::to_string(ga.getFittest().fitness));
                 loadingText.setCharacterSize(35);
                 loadingText.setFillColor(sf::Color(100, 100, 100));
                 loadingText.setOutlineColor(sf::Color(255, 255, 255));
@@ -462,13 +478,13 @@ int main() {
                 loadingText.setPosition(size.x / 2.0 - textSize.width / 2.0, size.y / 2.0 - textSize.height / 2.0);
                 window.draw(loadingText);
             }
-            window.draw(buttonColumn);
-            window.draw(*centerBox);
-            for (auto& button : inputs.inputs) {
-                window.draw(*button);
-            }
             window.display();
-            // shouldDraw = false;
+            // std::thread([&]() {
+            shouldDraw = false;
+            ga.nextGeneration();
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            shouldDraw = true;
+            // });
         }
     }
     return 0;

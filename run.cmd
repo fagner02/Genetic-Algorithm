@@ -15,6 +15,8 @@ src\ui\InstructionText.cpp ^
 src\ui\Column.cpp ^
 src\ui\Clickable.cpp ^
 src\ui\ClickableLabel.cpp ^
+src\ui\Stack.cpp ^
+src\ui\Root.cpp ^
 -lsfml-graphics-s ^
 -lsfml-window-s ^
 -lsfml-system-s ^

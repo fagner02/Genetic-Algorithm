@@ -2,7 +2,7 @@
 
 class Row : public DrawObject {
 public:
-    std::vector<DrawObject*> childrenContainer;
+    std::vector<DrawObject*> children;
     float gap = 5;
 
     Row(std::vector<DrawObject*> children);

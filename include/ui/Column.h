@@ -1,5 +1,5 @@
 #pragma once
-
+#include <iostream>
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include <ui/DrawObject.h>
@@ -7,7 +7,7 @@
 class Column : public DrawObject {
 public:
     float gap;
-    std::vector<DrawObject*> childrenContainer;
+    std::vector<DrawObject*> children;
 
     Column(std::vector<DrawObject*> children, float gap);
     void updateLayout();

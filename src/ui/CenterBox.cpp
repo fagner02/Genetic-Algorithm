@@ -1,5 +1,5 @@
 #include <ui/CenterBox.h>
-
+#include <iostream>
 CenterBox::CenterBox(DrawObject* child) : child(child) {
     updateLayout();
 }
@@ -9,6 +9,9 @@ CenterBox::CenterBox() {
 }
 
 void CenterBox::updateLayout() {
+    if (parent != nullptr) {
+        size = parent->size;
+    }
     if (child) {
         auto childSize = child->calculateSize();
         auto childPos = sf::Vector2f(
@@ -17,6 +20,10 @@ void CenterBox::updateLayout() {
         );
         child->setPosition(childPos);
     }
+}
+
+void CenterBox::update() {
+    updateLayout();
 }
 
 void CenterBox::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -34,7 +41,7 @@ sf::Vector2f CenterBox::calculateSize() const {
     if (child) {
         return child->calculateSize();
     }
-    return sf::Vector2f(0, 0);
+    return size;
 }
 
 void CenterBox::setPosition(sf::Vector2f position) {
